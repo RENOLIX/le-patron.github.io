@@ -19,6 +19,7 @@ export default function LiveApp() {
           category: category || "Collection",
           price: Number(data.price || 0),
           shade: String(data.shade || "plum"),
+          image: data.image ? String(data.image) : undefined,
           label: data.label ? String(data.label) : undefined,
           description: String(data.description || ""),
           sizes: Array.isArray(data.sizes) ? data.sizes.map(String) : [],
