@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import App, { products } from "./App";
 import { db } from "./lib/firebase";
+import ScrollReveal from "./ScrollReveal";
 
 export default function LiveApp() {
   const [, refresh] = useState(0);
@@ -32,5 +33,5 @@ export default function LiveApp() {
     }
   }, () => undefined), []);
 
-  return <App />;
+  return <ScrollReveal><App /></ScrollReveal>;
 }

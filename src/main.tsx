@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 import "./index.css";
 import "./uploads.css";
+import "./scroll-reveal.css";
 import App from "./LiveApp";
 
 const RECOVERY_STORAGE_KEY = "__mina_supabase_recovery_payload";

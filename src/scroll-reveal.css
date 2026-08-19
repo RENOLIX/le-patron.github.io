@@ -1,0 +1,1 @@
+.scroll-reveal-target{opacity:0;transform:translateY(28px);transition:opacity .7s ease var(--reveal-delay,0ms),transform .7s cubic-bezier(.2,.75,.25,1) var(--reveal-delay,0ms)}.scroll-reveal-target.is-revealed{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.scroll-reveal-target{opacity:1;transform:none;transition:none}}
