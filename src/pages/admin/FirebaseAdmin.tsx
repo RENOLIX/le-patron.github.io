@@ -27,7 +27,6 @@ function useRows(path: string, sorted = false) {
 export default function FirebaseAdmin() {
   const [user, setUser] = useState(auth.currentUser), [role, setRole] = useState(""), [loading, setLoading] = useState(true), [tab, setTab] = useState<Tab>("orders");
   useEffect(() => onAuthStateChanged(auth, async current => { setUser(current); if (!current) { setRole(""); setLoading(false); return; } const profileRef = doc(db, "users", current.uid), profile = await getDoc(profileRef); if (!profile.exists() && current.email === "admin@lepatronfacile.dz") { await setDoc(profileRef, { email: current.email, role: "admin", active: true, createdAt: serverTimestamp() }); setRole("admin"); } else setRole(profile.data()?.role ?? ""); setLoading(false); }), []);
-  useEffect(() => { if (role !== "admin") return; void (async () => { const [products, shipping] = await Promise.all([getDocs(collection(db, "products")), getDocs(collection(db, "shipping"))]); if (products.empty || shipping.empty) { const batch = writeBatch(db); if (products.empty) productSeed.forEach(p => batch.set(doc(db, "products", p.slug), { ...p, active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })); if (shipping.empty) shippingSeed.forEach(([code, name, home, office]) => batch.set(doc(db, "shipping", code), { code, name, home, office, active: true, updatedAt: serverTimestamp() })); await batch.commit(); } })(); }, [role]);
   if (loading) return <div className="admin-loading">Chargement du back-office…</div>;
   if (!user) return <Login />;
   const employee = role === "employee";
