@@ -5,7 +5,7 @@ export default function ScrollToTop() {
   const location = useLocation();
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    window.scrollTo(0, 0);
   }, [location.pathname, location.search]);
 
   return null;
