@@ -4,4 +4,6 @@
 .checkout-submit,.checkout-submit svg{color:#fff!important}
 .contact-page form .button,.contact-page form .button svg{color:#fff!important}
 .button:not(:hover),.button:not(:hover) svg,.btn-creuse:not(:hover),.btn-creuse:not(:hover) svg{color:#fff!important}.button:hover,.button:hover svg{color:#4e1f4d!important}.btn-creuse:hover,.btn-creuse:hover svg{color:#fff!important}.hero .eyebrow{color:#fff!important}.subfilters>span{display:none}.mobile-nav .mobile-category{margin-bottom:6px;font:10px 'DM Mono';letter-spacing:.12em}
+.home-cta .btn-creuse:not(:hover),.home-cta .btn-creuse:not(:hover) svg{color:#4e1f4d!important}
+.hero-copy .button:not(:hover),.hero-copy .button:not(:hover) svg,.product-add:not(:hover),.product-add:not(:hover) svg{color:#4e1f4d!important}.hero-copy .button:hover,.hero-copy .button:hover svg{color:#fff!important}
 .product-admin-name{display:flex;align-items:center;gap:10px}.product-admin-name img{width:42px;height:42px;border-radius:9px;object-fit:cover}.image-preview{display:flex;align-items:center;gap:12px;margin:10px 0}.image-preview img{width:76px;height:76px;border-radius:12px;object-fit:cover}.admin-form small{display:block;color:#887b73;font-size:10px;margin:7px 0}.admin-error{color:#a23b5b;font-size:11px}
