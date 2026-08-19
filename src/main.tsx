@@ -6,6 +6,7 @@ import "./uploads.css";
 import "./scroll-reveal.css";
 import "./readability.css";
 import App from "./LiveApp";
+import ScrollToTop from "./ScrollToTop";
 
 const RECOVERY_STORAGE_KEY = "__mina_supabase_recovery_payload";
 
@@ -79,6 +80,7 @@ if (typeof window !== "undefined") {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <HashRouter>
+      <ScrollToTop />
       <App />
     </HashRouter>
   </React.StrictMode>,
