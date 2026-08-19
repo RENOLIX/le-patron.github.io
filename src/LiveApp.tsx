@@ -11,7 +11,7 @@ export default function LiveApp() {
     const live = snapshot.docs
       .map((entry, index) => {
         const data = entry.data() as Record<string, unknown>;
-        if (data.active === false) return null;
+        if (data.active === false || ["robe-amandine", "abaya-noura", "pantalon-adam", "veste-alba", "survetement-sami", "jupe-lina", "bleu-atelier", "blouse-sana"].includes(String(data.slug || entry.id))) return null;
         const category = [data.category, data.subcategory].filter(Boolean).join(" · ");
         return {
           id: index + 1,
