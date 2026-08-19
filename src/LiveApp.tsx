@@ -28,10 +28,8 @@ export default function LiveApp() {
         };
       })
       .filter(Boolean);
-    if (live.length) {
-      products.splice(0, products.length, ...(live as typeof products));
-      refresh(value => value + 1);
-    }
+    products.splice(0, products.length, ...(live as typeof products));
+    refresh(value => value + 1);
   }, () => undefined), []);
 
   return <ScrollReveal><App /></ScrollReveal>;
