@@ -4,13 +4,6 @@ import App, { products } from "./App";
 import { db } from "./lib/firebase";
 import ScrollReveal from "./ScrollReveal";
 
-function productImageUrl(value: unknown) {
-  const url = String(value || "");
-  return url.includes("res.cloudinary.com/u7qefq06/image/upload/")
-    ? url.replace("/image/upload/", "/image/upload/c_trim/c_pad,w_1200,h_1200,b_white/")
-    : url;
-}
-
 export default function LiveApp() {
   const [, refresh] = useState(0);
   const [catalogReady, setCatalogReady] = useState(false);
@@ -28,8 +21,8 @@ export default function LiveApp() {
           category: category || "Collection",
           price: Number(data.price || 0),
           shade: String(data.shade || "plum"),
-          image: data.image ? productImageUrl(data.image) : undefined,
-          images: Array.isArray(data.images) ? data.images.map(productImageUrl) : undefined,
+          image: data.image ? String(data.image) : undefined,
+          images: Array.isArray(data.images) ? data.images.map(String) : undefined,
           label: data.label ? String(data.label) : undefined,
           description: String(data.description || ""),
           sizes: Array.isArray(data.sizes) ? data.sizes.map(String) : [],
