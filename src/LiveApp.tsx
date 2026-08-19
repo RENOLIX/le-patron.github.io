@@ -6,6 +6,7 @@ import ScrollReveal from "./ScrollReveal";
 
 export default function LiveApp() {
   const [, refresh] = useState(0);
+  const [catalogReady, setCatalogReady] = useState(false);
 
   useEffect(() => onSnapshot(collection(db, "products"), snapshot => {
     const live = snapshot.docs
@@ -32,7 +33,9 @@ export default function LiveApp() {
       products.splice(0, products.length, ...(live as typeof products));
       refresh(value => value + 1);
     }
-  }, () => undefined), []);
+    setCatalogReady(true);
+  }, () => setCatalogReady(true)), []);
 
+  if (!catalogReady) return <div className="catalog-loading">Chargement de la boutique…</div>;
   return <ScrollReveal><App /></ScrollReveal>;
 }
