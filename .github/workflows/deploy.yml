@@ -34,7 +34,12 @@ jobs:
         run: npm run build
 
       - name: Add SPA fallback
-        run: cp dist/index.html dist/404.html
+        run: |
+          cp dist/index.html dist/404.html
+          for route in admin/login collections/nos-patrons checkout contact a-propos; do
+            mkdir -p "dist/$route"
+            cp dist/index.html "dist/$route/index.html"
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
