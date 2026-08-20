@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import "./uploads.css";
 import "./scroll-reveal.css";
@@ -64,8 +64,8 @@ if (typeof window !== "undefined") {
       params.has("access_token") ||
       params.has("token_hash") ||
       params.has("code")
-        ? "#/admin/reset-password"
-        : "#/admin/login";
+        ? "/admin/reset-password"
+        : "/admin/login";
 
     window.sessionStorage.setItem(RECOVERY_STORAGE_KEY, recoveryPayload);
 
@@ -79,9 +79,9 @@ if (typeof window !== "undefined") {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <HashRouter>
+    <BrowserRouter>
       <ScrollToTop />
       <App />
-    </HashRouter>
+    </BrowserRouter>
   </React.StrictMode>,
 );
