@@ -1,26 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import { Archive, Boxes, LogOut, Mail, MapPinned, PackageCheck, Pencil, Plus, Save, ShieldCheck, Trash2, Users, X } from "lucide-react";
+import { Archive, Boxes, FolderTree, LogOut, Mail, MapPinned, PackageCheck, Pencil, Plus, Save, ShieldCheck, Trash2, Users, X } from "lucide-react";
 import { auth, db, firebaseConfig } from "../../lib/firebase";
+import { catalogOptions, defaultMenus } from "../../catalog";
 import "./firebase-admin.css";
 
-type Tab = "products" | "orders" | "shipping" | "messages" | "users";
+type Tab = "products" | "categories" | "orders" | "shipping" | "messages" | "users";
 type Row = Record<string, any> & { id: string };
 const statuses = ["Nouvelle", "Confirmée", "En préparation", "Expédiée", "Livrée", "Annulée"];
 const shippingSeed = [["01","Adrar",1650,850],["02","Chlef",700,450],["03","Laghouat",850,450],["04","Oum El Bouaghi",850,450],["05","Batna",850,450],["06","Bejaia",850,450],["07","Biskra",850,450],["08","Bechar",1200,650],["09","Blida",650,400],["10","Bouira",650,450],["11","Tamanrasset",1800,1000],["12","Tebessa",850,450],["13","Tlemcen",850,450],["14","Tiaret",850,450],["15","Tizi Ouzou",650,450],["16","Alger",450,300],["17","Djelfa",850,450],["18","Jijel",850,450],["19","Setif",850,450],["20","Saida",850,450],["21","Skikda",850,450],["22","Sidi Bel Abbes",850,450],["23","Annaba",850,450],["24","Guelma",850,450],["25","Constantine",850,450],["26","Medea",850,450],["27","Mostaganem",850,450],["28","MSila",850,450],["29","Mascara",850,450],["30","Ouargla",1000,500],["31","Oran",850,450],["32","El Bayadh",850,450],["33","Illizi",1700,850],["34","Bordj Bou Arreridj",650,450],["35","Boumerdes",650,400],["36","El Tarf",850,550],["37","Tindouf",1650,0],["38","Tissemsilt",850,450],["39","El Oued",950,600],["40","Khenchela",850,450],["41","Souk Ahras",850,450],["42","Tipaza",650,450],["43","Mila",850,450],["44","Ain Defla",650,450],["45","Naama",950,500],["46","Ain Temouchent",850,450],["47","Ghardaia",950,650],["48","Relizane",850,450],["49","Timimoun",1650,850],["50","Bordj Badji Mokhtar",1600,0],["51","Ouled Djellal",950,450],["52","Beni Abbes",1300,0],["53","In Salah",1650,850],["54","In Guezzam",1500,0],["55","Touggourt",950,500],["56","Djanet",2000,1000],["57","El Mghair",950,500],["58","El Meniaa",950,500]] as const;
 const productSeed = [{slug:"robe-amandine",name:"La robe Amandine",category:"Femme",subcategory:"Robe",price:1800,shade:"lilac",description:"Une robe fluide, élégante et facile à adapter.",sizes:["34","36","38","40","42","44"]},{slug:"abaya-noura",name:"L'abaya Noura",category:"Femme",subcategory:"Abaya",price:2200,shade:"cream",description:"Une abaya intemporelle aux lignes douces.",sizes:["36","38","40","42","44","46"]},{slug:"pantalon-adam",name:"Le pantalon Adam",category:"Homme",subcategory:"Pantalon",price:1500,shade:"sage",description:"Le pantalon essentiel, moderne et confortable.",sizes:["S","M","L","XL","XXL"]},{slug:"veste-alba",name:"La veste Alba",category:"Femme",subcategory:"Veste",price:1900,shade:"plum",description:"Une veste structurée et féminine.",sizes:["34","36","38","40","42","44"]},{slug:"survetement-sami",name:"Le survêtement Sami",category:"Enfants",subcategory:"Garçons · Survêtement",price:1650,shade:"blue",description:"Un ensemble confortable pour les petits.",sizes:["4 ans","6 ans","8 ans","10 ans","12 ans"]},{slug:"jupe-lina",name:"La jupe Lina",category:"Enfants",subcategory:"Filles · Jupe",price:1200,shade:"rose",description:"Une jupe joyeuse et modulable.",sizes:["4 ans","6 ans","8 ans","10 ans","12 ans"]},{slug:"bleu-atelier",name:"Le bleu Atelier",category:"Bleu de travail",subcategory:"",price:1950,shade:"ochre",description:"Un modèle pratique et robuste.",sizes:["S","M","L","XL","XXL"]},{slug:"blouse-sana",name:"La blouse Sana",category:"Tenue médicale",subcategory:"",price:1750,shade:"mint",description:"Une blouse professionnelle confortable.",sizes:["S","M","L","XL","XXL"]}];
 
-const catalogOptions: Record<string, string[]> = { Homme: ["Chemisier", "Pantalon", "Pull", "Veste", "Survêtement"], Femme: ["Abaya", "Hidjab", "Robe", "Chemisier", "Pantalon", "Jupe", "Veste", "Burkini"], Enfants: ["Garçons · Pull", "Garçons · Pantalon", "Garçons · Survêtement", "Garçons · Veste", "Filles · Chemisier", "Filles · Jupe", "Filles · Robe", "Filles · Pantalon", "Filles · Veste"], Bébé: [], "Bleu de travail": [], "Tenue médicale": [] };
 const numericSizes = ["34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58"];
 const letterSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"];
 const childSizes = ["0-3 mois", "3-6 mois", "6-9 mois", "9-12 mois", "18 mois", "2 ans", "4 ans", "6 ans", "8 ans", "10 ans", "12 ans"];
 const ageSizes = ["1 an", "2 ans", "3 ans", "4 ans", "5 ans", "6 ans", "7 ans", "8 ans", "9 ans", "10 ans", "11 ans", "12 ans", "13 ans", "14 ans", "16 ans"];
 
-function useRows(path: string, sorted = false) {
+function useRows(path: string, sorted = false, includeMeta = false) {
   const [rows, setRows] = useState<Row[]>([]);
-  useEffect(() => onSnapshot(sorted ? query(collection(db, path), orderBy("createdAt", "desc")) : collection(db, path), snap => setRows(snap.docs.map(d => ({ id: d.id, ...d.data() })))), [path, sorted]);
+  useEffect(() => onSnapshot(sorted ? query(collection(db, path), orderBy("createdAt", "desc")) : collection(db, path), snap => setRows(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(row => includeMeta || !(row as Row).kind) as Row[])), [path, sorted, includeMeta]);
   return rows;
 }
 
@@ -30,12 +30,44 @@ export default function FirebaseAdmin() {
   if (loading) return <div className="admin-loading">Chargement du back-office…</div>;
   if (!user) return <Login />;
   const employee = role === "employee";
-  return <div className="admin-shell"><aside className="admin-side"><div className="admin-mark"><ShieldCheck /><div><b>Le Patron Facile</b><span>Administration</span></div></div><nav><button className={tab === "orders" ? "active" : ""} onClick={() => setTab("orders")}><PackageCheck />Commandes</button>{!employee && <><button className={tab === "products" ? "active" : ""} onClick={() => setTab("products")}><Boxes />Produits</button><button className={tab === "shipping" ? "active" : ""} onClick={() => setTab("shipping")}><MapPinned />Livraisons</button><button className={tab === "messages" ? "active" : ""} onClick={() => setTab("messages")}><Mail />Messages</button><button className={tab === "users" ? "active" : ""} onClick={() => setTab("users")}><Users />Utilisateurs</button></>}</nav><div className="admin-user"><span>{user.email}</span><small>{role || "profil"}</small><button onClick={() => signOut(auth)}><LogOut /> Déconnexion</button></div></aside><main className="admin-main">{tab === "orders" && <Orders employee={employee}/>} {!employee && tab === "products" && <Products/>} {!employee && tab === "shipping" && <Shipping/>} {!employee && tab === "messages" && <Messages/>} {!employee && tab === "users" && <UsersPage/>}</main></div>;
+  return <div className="admin-shell"><aside className="admin-side"><div className="admin-mark"><ShieldCheck /><div><b>Le Patron Facile</b><span>Administration</span></div></div><nav><button className={tab === "orders" ? "active" : ""} onClick={() => setTab("orders")}><PackageCheck />Commandes</button>{!employee && <><button className={tab === "products" ? "active" : ""} onClick={() => setTab("products")}><Boxes />Produits</button><button className={tab === "categories" ? "active" : ""} onClick={() => setTab("categories")}><FolderTree />Catégories</button><button className={tab === "shipping" ? "active" : ""} onClick={() => setTab("shipping")}><MapPinned />Livraisons</button><button className={tab === "messages" ? "active" : ""} onClick={() => setTab("messages")}><Mail />Messages</button><button className={tab === "users" ? "active" : ""} onClick={() => setTab("users")}><Users />Utilisateurs</button></>}</nav><div className="admin-user"><span>{user.email}</span><small>{role || "profil"}</small><button onClick={() => signOut(auth)}><LogOut /> Déconnexion</button></div></aside><main className="admin-main">{tab === "orders" && <Orders employee={employee}/>} {!employee && tab === "products" && <Products/>} {!employee && tab === "categories" && <Categories/>} {!employee && tab === "shipping" && <Shipping/>} {!employee && tab === "messages" && <Messages/>} {!employee && tab === "users" && <UsersPage/>}</main></div>;
 }
 
 function Login() { const [error, setError] = useState(""); async function submit(e: React.FormEvent<HTMLFormElement>) { e.preventDefault(); const f = new FormData(e.currentTarget); try { await signInWithEmailAndPassword(auth, String(f.get("email")), String(f.get("password"))); } catch { setError("Email ou mot de passe incorrect."); } } return <div className="admin-login"><form onSubmit={submit}><ShieldCheck/><p>LE PATRON FACILE</p><h1>Administration</h1><label>Email<input name="email" type="email" required /></label><label>Mot de passe<input name="password" type="password" required /></label>{error && <b>{error}</b>}<button>Se connecter</button><a href="/">Retour à la boutique</a></form></div>; }
 
 function SectionHead({ title, count, action }: { title: string; count: number; action?: React.ReactNode }) { return <header className="admin-head"><div><p>BACK-OFFICE</p><h1>{title}</h1><span>{count} éléments</span></div>{action}</header>; }
+
+function Categories() {
+  const [rows, setRows] = useState<Row[] | null>(null), [name, setName] = useState(""), [notice, setNotice] = useState("");
+  const initializing = useRef(false);
+  useEffect(() => onSnapshot(collection(db, "products"), snap => setRows(snap.docs.map(entry => ({ id: entry.id, ...entry.data() })).filter(row => (row as Row).kind === "category" || row.id === "_category_config") as Row[])), []);
+  useEffect(() => {
+    if (rows === null || initializing.current || rows.some(row => row.id === "_category_config")) return;
+    initializing.current = true;
+    void (async () => {
+      await Promise.all(defaultMenus.map((menu, order) => setDoc(doc(db, "products", `_category_${slugify(menu.name)}`), { kind: "category", name: menu.name, items: menu.items, order, updatedAt: serverTimestamp() })));
+      await setDoc(doc(db, "products", "_category_config"), { kind: "category-config", initialized: true, updatedAt: serverTimestamp() });
+    })();
+  }, [rows]);
+  const categories = (rows || []).filter(row => row.kind === "category").sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+  async function addCategory(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault(); const value = name.trim(); if (!value) return;
+    if (categories.some(row => String(row.name).toLowerCase() === value.toLowerCase())) return setNotice("Cette catégorie existe déjà.");
+    await setDoc(doc(db, "products", `_category_${slugify(value)}`), { kind: "category", name: value, items: [], order: categories.length, updatedAt: serverTimestamp() });
+    setName(""); setNotice("Catégorie ajoutée : sa page et son filtre sont disponibles automatiquement.");
+  }
+  async function addSubcategory(category: Row, form: HTMLFormElement) {
+    const input = new FormData(form), value = String(input.get("subcategory") || "").trim(); if (!value) return;
+    const items = Array.from(new Set([...(category.items || []), value]));
+    await updateDoc(doc(db, "products", category.id), { items, updatedAt: serverTimestamp() }); form.reset();
+  }
+  async function removeSubcategory(category: Row, value: string) {
+    await updateDoc(doc(db, "products", category.id), { items: (category.items || []).filter((item: string) => item !== value), updatedAt: serverTimestamp() });
+  }
+  return <><SectionHead title="Catégories" count={categories.length}/><form className="category-create" onSubmit={addCategory}><input value={name} onChange={event => setName(event.target.value)} placeholder="Nom de la nouvelle catégorie"/><button className="admin-primary"><Plus/> Ajouter la catégorie</button></form>{notice && <p className="admin-notice">{notice}</p>}<div className="category-admin-grid">{categories.map(category => <article key={category.id}><header><div><small>CATÉGORIE</small><h2>{category.name}</h2></div><button className="category-delete" onClick={() => confirm(`Supprimer la catégorie ${category.name} ?`) && deleteDoc(doc(db, "products", category.id))}><Trash2/> Supprimer</button></header><div className="category-tags">{(category.items || []).length ? category.items.map((item: string) => <span key={item}>{item}<button aria-label={`Supprimer ${item}`} onClick={() => removeSubcategory(category, item)}><X/></button></span>) : <p>Aucune sous-catégorie.</p>}</div><form onSubmit={event => { event.preventDefault(); void addSubcategory(category, event.currentTarget); }}><input name="subcategory" placeholder="Nouvelle sous-catégorie"/><button className="admin-primary"><Plus/> Ajouter</button></form></article>)}</div></>;
+}
+
+function slugify(value: string) { return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
 
 function Products() { const rows = useRows("products"), [editing, setEditing] = useState<Row | null>(null); return <><SectionHead title="Produits" count={rows.length} action={<button className="admin-primary" onClick={() => setEditing({ id: "" })}><Plus/> Ajouter un produit</button>}/><div className="admin-table"><div className="table-row table-title"><span>Produit</span><span>Catégorie</span><span>Prix</span><span>État</span><span/></div>{rows.map(p => { const cover = p.images?.[0] || p.image; return <div className="table-row" key={p.id}><span className="product-admin-name"><span style={{width:42,height:42,borderRadius:9,overflow:"hidden",display:"grid",placeItems:"center",background:"#eee4dc",flex:"0 0 42px"}}>{cover ? <img src={cover} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : "—"}</span><span><b>{p.name}</b><small>{p.subcategory}</small></span></span><span>{p.category}</span><span>{p.price?.toLocaleString("fr-DZ")} DA</span><span><i className={p.active ? "on" : "off"}>{p.active ? "Actif" : "Masqué"}</i></span><span className="actions"><button onClick={() => setEditing(p)}><Pencil/></button><button onClick={() => confirm("Supprimer ce produit ?") && deleteDoc(doc(db, "products", p.id))}><Trash2/></button></span></div>})}</div>{editing && <Modal close={() => setEditing(null)}><MultiProductEditor key={editing.id} editing={editing} close={() => setEditing(null)}/></Modal>}</>; }
 
