@@ -41,8 +41,13 @@ export default function LiveApp() {
           sizes: Array.isArray(data.sizes) ? data.sizes.map(String) : [],
         };
       })
-      .filter(Boolean);
-    products.splice(0, products.length, ...(live as typeof products));
+      .filter(Boolean) as typeof products;
+
+    // Avoid ambiguous product pages when old Firestore records share a slug.
+    // The last record wins, so each public URL resolves to one product only.
+    const uniqueBySlug = new Map<string, typeof products[number]>();
+    live.forEach(product => uniqueBySlug.set(product.slug, product));
+    products.splice(0, products.length, ...Array.from(uniqueBySlug.values()));
     refresh(value => value + 1);
   }, () => undefined), []);
 
