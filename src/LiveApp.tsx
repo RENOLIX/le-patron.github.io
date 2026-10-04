@@ -7,6 +7,8 @@ import ScrollReveal from "./ScrollReveal";
 
 export default function LiveApp() {
   const [, refresh] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => onSnapshot(collection(db, "products"), snapshot => {
     const categoryConfig = snapshot.docs.some(entry => entry.id === "_category_config");
@@ -22,13 +24,13 @@ export default function LiveApp() {
       setCatalogMenus(liveMenus);
     }
     const live = snapshot.docs
-      .map((entry, index) => {
+      .map(entry => {
         const data = entry.data() as Record<string, unknown>;
         if (data.kind === "category" || entry.id === "_category_config") return null;
         if (data.active === false || ["robe-amandine", "abaya-noura", "pantalon-adam", "veste-alba", "survetement-sami", "jupe-lina", "bleu-atelier", "blouse-sana"].includes(String(data.slug || entry.id))) return null;
         const category = [data.category, data.subcategory].filter(Boolean).join(" · ");
         return {
-          id: index + 1,
+          id: entry.id,
           slug: String(data.slug || entry.id),
           name: String(data.name || "Patron sans nom"),
           category: category || "Collection",
@@ -43,13 +45,11 @@ export default function LiveApp() {
       })
       .filter(Boolean) as typeof products;
 
-    // Avoid ambiguous product pages when old Firestore records share a slug.
-    // The last record wins, so each public URL resolves to one product only.
-    const uniqueBySlug = new Map<string, typeof products[number]>();
-    live.forEach(product => uniqueBySlug.set(product.slug, product));
-    products.splice(0, products.length, ...Array.from(uniqueBySlug.values()));
+    products.splice(0, products.length, ...live);
+    setReady(true);
+    setError("");
     refresh(value => value + 1);
-  }, () => undefined), []);
+  }, () => { setReady(true); setError("La boutique est temporairement indisponible. Veuillez réessayer."); }), []);
 
-  return <ScrollReveal><App /></ScrollReveal>;
+  return <ScrollReveal><App catalogReady={ready} catalogError={error} /></ScrollReveal>;
 }
